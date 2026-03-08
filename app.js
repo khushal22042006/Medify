@@ -6,14 +6,23 @@ require('dotenv').config();
 
 const app = express();
 
+// ✅ Required for Render (sits behind a reverse proxy)
+app.set('trust proxy', 1);
+
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, 'public')));
+
 app.use(session({
-  secret: process.env.SESSION_SECRET,
+  secret: process.env.SESSION_SECRET || 'fallback-secret-change-me',
   resave: false,
-  saveUninitialized: false
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',  // ✅ HTTPS-only on Render
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60 * 24  // 24 hours
+  }
 }));
 
 // MongoDB Connection
@@ -22,9 +31,9 @@ mongoose.connect(process.env.MONGO_URI)
   .catch(err => console.log('❌ DB Error:', err));
 
 // Routes
-const authRoutes = require('./routes/authRoutes');
-const doctorRoutes = require('./routes/doctorRoutes');
-const patientRoutes = require('./routes/patientRoutes');
+const authRoutes       = require('./routes/authRoutes');
+const doctorRoutes     = require('./routes/doctorRoutes');
+const patientRoutes    = require('./routes/patientRoutes');
 const pharmacistRoutes = require('./routes/pharmacistRoutes');
 
 app.use('/', authRoutes);
