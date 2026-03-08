@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Patient Dashboard - Medify</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    :root { --bg: #e8e3cc; --text: #2b1200; --muted: #6b5a4a; --border: #c4bfa0; --card: #eae6d4; --input: #eae6d2; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+    /* HEADER */
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 16px 48px; background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo-wrap { display: flex; align-items: center; gap: 10px; }
+    .logo-icon { width: 40px; height: 40px; background: #f0ede0; border-radius: 10px; border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 18px; }
+    .logo-text { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 800; color: var(--text); }
+    .nav { display: flex; align-items: center; gap: 20px; }
+    .nav a { text-decoration: none; color: var(--text); font-size: 15px; font-weight: 500; }
+    .nav button { padding: 9px 22px; border: 1.5px solid var(--text); border-radius: 7px; background: transparent; color: var(--text); font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .nav button:hover { background: var(--text); color: var(--bg); }
+
+    /* MAIN */
+    .main { max-width: 1200px; margin: 0 auto; padding: 40px 24px; }
+
+    /* PAGE TITLE */
+    .page-title { margin-bottom: 32px; }
+    .page-title h1 { font-family: 'Playfair Display', serif; font-size: 32px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .page-title p { font-size: 15px; color: var(--muted); }
+
+    /* STATS */
+    .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px; }
+    @media(max-width:800px){ .stats-grid { grid-template-columns: repeat(2,1fr); } }
+    @media(max-width:480px){ .stats-grid { grid-template-columns: 1fr; } }
+    .stat-card { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 20px 22px; display: flex; align-items: center; justify-content: space-between; }
+    .stat-card p { font-size: 13px; font-weight: 500; color: var(--muted); margin-bottom: 6px; }
+    .stat-card .value { font-size: 26px; font-weight: 700; color: var(--text); }
+    .stat-card .value-sm { font-size: 16px; font-weight: 700; color: var(--text); }
+    .stat-icon svg { width: 30px; height: 30px; stroke: var(--text); fill: none; stroke-width: 1.8; opacity: 0.55; }
+
+    /* TWO COLUMN LAYOUT */
+    .two-col { display: grid; grid-template-columns: 1fr 2fr; gap: 20px; }
+    @media(max-width:900px){ .two-col { grid-template-columns: 1fr; } }
+
+    /* PANEL CARD */
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 12px; padding: 28px; }
+    .panel-header { margin-bottom: 20px; }
+    .panel-header h2 { font-size: 18px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; margin-bottom: 4px; }
+    .panel-header h2 svg { width: 18px; height: 18px; stroke: var(--text); fill: none; stroke-width: 2; }
+    .panel-header p { font-size: 13px; color: var(--muted); }
+
+    /* REMINDER ROWS */
+    .reminder-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; }
+    .reminder-left { display: flex; align-items: center; gap: 12px; }
+    .reminder-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+    .dot-pending { background: var(--muted); }
+    .dot-done { background: #4a9a5a; }
+    .reminder-med { font-size: 14px; font-weight: 600; color: var(--text); }
+    .reminder-time { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .btn-mark { padding: 7px 16px; border: 1.5px solid var(--text); border-radius: 7px; background: transparent; color: var(--text); font-size: 13px; font-weight: 600; cursor: pointer; font-family: 'Inter', sans-serif; transition: all 0.2s; }
+    .btn-mark:hover { background: var(--text); color: var(--bg); }
+    .check-icon svg { width: 18px; height: 18px; stroke: #4a9a5a; fill: none; stroke-width: 2; }
+
+    /* PRESCRIPTION ENTRIES */
+    .rx-entry { border: 1px solid var(--border); border-radius: 10px; padding: 20px; margin-bottom: 16px; position: relative; }
+    .rx-entry:last-child { margin-bottom: 0; }
+    .rx-top { display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 8px; }
+    .rx-name { font-size: 20px; font-weight: 700; color: var(--text); display: flex; align-items: center; gap: 8px; }
+    .rx-name svg { width: 18px; height: 18px; stroke: var(--text); fill: none; stroke-width: 2; opacity: 0.7; }
+    .rx-doctor { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 5px; margin-bottom: 14px; }
+    .rx-doctor svg { width: 13px; height: 13px; stroke: var(--muted); fill: none; stroke-width: 2; }
+    .rx-badge { font-size: 11px; font-weight: 600; padding: 3px 10px; border-radius: 20px; border: 1px solid var(--border); color: var(--muted); background: var(--bg); }
+    .rx-details-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px; margin-bottom: 14px; }
+    .rx-detail { font-size: 13px; color: var(--muted); }
+    .rx-detail strong { color: var(--text); }
+    .rx-next-dose { display: flex; align-items: center; gap: 8px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin-bottom: 14px; font-size: 13px; font-weight: 600; color: var(--text); }
+    .rx-next-dose svg { width: 16px; height: 16px; stroke: var(--text); fill: none; stroke-width: 2; opacity: 0.6; }
+    .rx-instructions { border-top: 1px solid var(--border); padding-top: 12px; font-size: 13px; color: var(--muted); }
+    .rx-instructions strong { color: var(--text); }
+
+    .empty-state { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 14px; }
+    .empty-state svg { width: 40px; height: 40px; stroke: var(--muted); fill: none; stroke-width: 1.5; margin: 0 auto 12px; display: block; }
+  </style>
+</head>
+<body>
+
+<!-- HEADER -->
+<header>
+  <div class="logo-wrap">
+    <div class="logo-icon">⚕️</div>
+    <span class="logo-text">Medify</span>
+  </div>
+  <nav class="nav">
+    <span id="patient-name" style="font-size:14px;color:var(--muted)"></span>
+    <button onclick="logout()">Logout</button>
+  </nav>
+</header>
+
+<div class="main">
+  <!-- PAGE TITLE -->
+  <div class="page-title">
+    <h1>Patient Dashboard</h1>
+    <p>Track your medications and health</p>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div>
+        <p>Active Prescriptions</p>
+        <div class="value" id="stat-active">0</div>
+      </div>
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div>
+        <p>Pending Reminders</p>
+        <div class="value" id="stat-pending">0</div>
+      </div>
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div>
+        <p>Completed Today</p>
+        <div class="value" id="stat-completed">0</div>
+      </div>
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div>
+        <p>Next Dose</p>
+        <div class="value-sm" id="stat-nextdose">None</div>
+      </div>
+      <div class="stat-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- TWO COLUMN -->
+  <div class="two-col">
+
+    <!-- TODAY'S REMINDERS -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>
+          <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+          Today's Reminders
+        </h2>
+        <p>Medication schedule for today</p>
+      </div>
+      <div id="reminders-list">
+        <p class="empty-state">No reminders for today</p>
+      </div>
+    </div>
+
+    <!-- ACTIVE PRESCRIPTIONS -->
+    <div class="panel">
+      <div class="panel-header">
+        <h2>
+          <svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+          Active Prescriptions
+        </h2>
+        <p>Your current medications</p>
+      </div>
+      <div id="prescriptions-list">
+        <div class="empty-state">
+          <svg viewBox="0 0 24 24"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+          <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px;">No active prescriptions</h3>
+          <p>Your prescriptions will appear here</p>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  let reminders = [];
+  let prescriptions = [];
+
+  // Format helpers
+  const fmtDate = d => new Date(d).toLocaleDateString('en-US', { year:'numeric', month:'short', day:'numeric' });
+  const fmtTime = d => new Date(d).toLocaleTimeString('en-US', { hour:'2-digit', minute:'2-digit' });
+
+  function updateStats() {
+    const active    = prescriptions.filter(p => p.status === 'active').length;
+    const pending   = reminders.filter(r => !r.taken).length;
+    const completed = reminders.filter(r => r.taken).length;
+    const nextRx    = prescriptions.find(p => p.nextDose);
+
+    document.getElementById('stat-active').textContent    = active;
+    document.getElementById('stat-pending').textContent   = pending;
+    document.getElementById('stat-completed').textContent = completed;
+    document.getElementById('stat-nextdose').textContent  = nextRx ? fmtTime(nextRx.nextDose) : 'None';
+  }
+
+  function renderReminders() {
+    const el = document.getElementById('reminders-list');
+    if (!reminders.length) { el.innerHTML = '<p style="text-align:center;color:var(--muted);font-size:14px;padding:20px 0">No reminders for today</p>'; return; }
+
+    el.innerHTML = reminders.map(r => `
+      <div class="reminder-row" id="rem-${r._id || r.id}">
+        <div class="reminder-left">
+          <div class="reminder-dot ${r.taken ? 'dot-done' : 'dot-pending'}"></div>
+          <div>
+            <div class="reminder-med">${r.medication}</div>
+            <div class="reminder-time">${r.time}</div>
+          </div>
+        </div>
+        ${r.taken
+          ? `<div class="check-icon"><svg viewBox="0 0 24 24"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div>`
+          : `<button class="btn-mark" onclick="markTaken('${r._id || r.id}')">Mark Taken</button>`
+        }
+      </div>
+    `).join('');
+  }
+
+  
+
+  function renderPrescriptions() {
+  const el = document.getElementById('prescriptions-list');
+
+  // ✅ show ALL prescriptions (active + dispensed = full history)
+  if (!prescriptions.length) {
+    el.innerHTML = `<div class="empty-state">
+      <svg viewBox="0 0 24 24"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+      <h3 style="font-size:16px;font-weight:600;color:var(--text);margin-bottom:6px;">No prescriptions yet</h3>
+      <p>Your prescriptions will appear here</p>
+    </div>`;
+    return;
+  }
+
+  el.innerHTML = prescriptions.map(p => `
+    <div class="rx-entry">
+      <div class="rx-top">
+        <div>
+          <div class="rx-name">
+            <svg viewBox="0 0 24 24"><path d="m10.5 20.5 10-10a4.95 4.95 0 1 0-7-7l-10 10a4.95 4.95 0 1 0 7 7Z"/><path d="m8.5 8.5 7 7"/></svg>
+            ${p.medication}
+          </div>
+          <div class="rx-doctor">
+            <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            Prescribed by ${p.doctorName}
+          </div>
+        </div>
+
+        <!-- ✅ colored badge based on status -->
+        <span class="rx-badge" style="${
+          p.status === 'active'    ? 'background:#d4f0d4;color:#2a6a2a;' :
+          p.status === 'dispensed' ? 'background:#ddd6c4;color:#6b5a4a;' :
+                                     'background:#f5d4d4;color:#8b2a2a;'
+        }">${p.status}</span>
+      </div>
+
+      <div class="rx-details-grid">
+        <div class="rx-detail"><strong>Dosage:</strong> ${p.dosage}</div>
+        <div class="rx-detail"><strong>Duration:</strong> ${p.duration || '—'}</div>
+        <div class="rx-detail"><strong>Frequency:</strong> ${(p.frequency || '').replace(/-/g,' ')}</div>
+        <div class="rx-detail"><strong>Prescribed:</strong> ${fmtDate(p.createdAt || p.prescribedDate)}</div>
+      </div>
+
+      ${p.nextDose ? `
+      <div class="rx-next-dose">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Next dose: ${fmtTime(p.nextDose)}
+      </div>` : ''}
+
+      ${p.instructions ? `
+      <div class="rx-instructions">
+        <strong>Instructions:</strong> ${p.instructions}
+      </div>` : ''}
+
+      <!-- ✅ OTP box — only show for active prescriptions -->
+      ${p.status === 'active' ? `
+      <div style="margin-top:14px; padding:14px 16px; background:#f5f2e0;
+                  border:2px dashed #c4bfa0; border-radius:8px; text-align:center;">
+        <p style="font-size:12px;color:var(--muted);margin-bottom:6px;">
+          🔑 Share this OTP with your pharmacist
+        </p>
+        <p style="font-size:26px;font-weight:800;letter-spacing:8px;color:var(--text);">
+          ${p.otp}
+        </p>
+      </div>` : ''}
+
+    </div>
+  `).join('');
+}
+
+
+
+  async function markTaken(id) {
+    try {
+      await fetch(`/api/reminders/${id}/taken`, { method: 'PATCH' });
+    } catch(e) {}
+    const r = reminders.find(r => (r._id || r.id) === id);
+    if (r) r.taken = true;
+    updateStats(); renderReminders();
+  }
+
+  async function load() {
+    try {
+      // Load prescriptions
+      const r1 = await fetch('/api/prescriptions');
+      if (r1.ok) {
+        const d = await r1.json();
+        prescriptions = d.prescriptions || [];
+      }
+      // Load reminders
+      const r2 = await fetch('/api/reminders');
+      if (r2.ok) {
+        const d = await r2.json();
+        reminders = d.reminders || [];
+      }
+      // Load user name
+      const r3 = await fetch('/api/auth/me');
+      if (r3.ok) {
+        const d = await r3.json();
+        if (d.name) document.getElementById('patient-name').textContent = d.name;
+      }
+    } catch(e) {}
+    updateStats(); renderReminders(); renderPrescriptions();
+  }
+
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    window.location.href = '/login';
+  }
+
+  load();
+</script>
+</body>
+</html>
